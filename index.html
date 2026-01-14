@@ -1,0 +1,1322 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>100 NUTRIÓLOGOS DIJERON — Juego interactivo</title>
+  <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+  <style>
+    :root{
+      --bg:#0b1020; --panel:#111a33; --panel2:#0f1730;
+      --text:#e9ecff; --muted:#aeb6e6; --accent:#47d18c; --warn:#ffcc66; --danger:#ff5c7a;
+      --card:rgba(255,255,255,0.06); --line:rgba(255,255,255,0.12);
+      --shadow: 0 10px 30px rgba(0,0,0,.35);
+      --radius:18px;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0; font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;
+      background: radial-gradient(1200px 700px at 20% -10%, rgba(71,209,140,.22), transparent 55%),
+                  radial-gradient(900px 600px at 90% 0%, rgba(93,166,255,.20), transparent 50%),
+                  radial-gradient(900px 600px at 70% 110%, rgba(255,92,122,.18), transparent 55%),
+                  var(--bg);
+      color:var(--text);
+      min-height:100vh;
+    }
+    header{
+      padding:18px 18px 12px;
+      position:sticky; top:0; z-index:20;
+      backdrop-filter: blur(10px);
+      background: linear-gradient(to bottom, rgba(11,16,32,.88), rgba(11,16,32,.55));
+      border-bottom:1px solid var(--line);
+    }
+    .topbar{
+      display:flex; gap:12px; align-items:center; justify-content:space-between; flex-wrap:wrap;
+      max-width:1200px; margin:0 auto;
+    }
+    .brand{display:flex; gap:12px; align-items:center}
+    .logo{
+      width:44px; height:44px; border-radius:14px;
+      background: linear-gradient(135deg, rgba(71,209,140,.95), rgba(93,166,255,.85));
+      box-shadow: var(--shadow);
+      display:grid; place-items:center; font-weight:900; color:#061023;
+      letter-spacing:.5px;
+    }
+    .title{line-height:1.1}
+    .title h1{margin:0; font-size:18px; letter-spacing:.4px}
+    .title .sub{margin-top:3px; font-size:12px; color:var(--muted)}
+    .tabs{display:flex; gap:8px; align-items:center; flex-wrap:wrap}
+    .tab{
+      appearance:none; border:1px solid var(--line); background: rgba(255,255,255,.05);
+      color:var(--text); padding:9px 12px; border-radius:12px; cursor:pointer;
+      transition: .15s transform, .15s background, .15s border;
+      font-weight:650; font-size:13px;
+    }
+    .tab:hover{transform: translateY(-1px); background: rgba(255,255,255,.08)}
+    .tab.active{border-color: rgba(71,209,140,.6); box-shadow: 0 0 0 3px rgba(71,209,140,.16) inset}
+    main{max-width:1200px; margin:0 auto; padding:16px 18px 34px}
+    .grid{display:grid; gap:14px; grid-template-columns: 1.2fr .8fr}
+    @media (max-width: 980px){
+      .grid{grid-template-columns:1fr}
+      header{position:relative}
+    }
+    .card{
+      background: var(--card);
+      border:1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow:hidden;
+    }
+    .card h2{
+      margin:0; padding:14px 16px;
+      font-size:14px; letter-spacing:.35px;
+      border-bottom:1px solid var(--line);
+      background: linear-gradient(to bottom, rgba(255,255,255,.05), rgba(255,255,255,.02));
+      display:flex; align-items:center; justify-content:space-between; gap:10px;
+    }
+    .card .body{padding:14px 16px}
+    .muted{color:var(--muted)}
+    .row{display:flex; gap:10px; flex-wrap:wrap; align-items:center}
+    .spacer{flex:1}
+    button, .btn{
+      appearance:none; border:1px solid var(--line);
+      background: rgba(255,255,255,.06);
+      color:var(--text);
+      padding:10px 12px; border-radius:12px;
+      cursor:pointer; transition:.15s transform, .15s background, .15s border;
+      font-weight:650; font-size:13px;
+    }
+    button:hover, .btn:hover{transform: translateY(-1px); background: rgba(255,255,255,.10)}
+    button:active{transform: translateY(0px)}
+button:disabled{opacity:.45; cursor:not-allowed; transform:none; background: rgba(255,255,255,.04)}
+    .btn-accent{border-color: rgba(71,209,140,.55); background: rgba(71,209,140,.12)}
+    .btn-warn{border-color: rgba(255,204,102,.55); background: rgba(255,204,102,.12)}
+    .btn-danger{border-color: rgba(255,92,122,.55); background: rgba(255,92,122,.12)}
+    .btn-ghost{background: transparent}
+    .pill{
+      padding:6px 10px; border-radius:999px; border:1px solid var(--line);
+      background: rgba(255,255,255,.05); font-size:12px; color:var(--muted)
+    }
+    .kbd{
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      font-size:12px; padding:3px 7px; border-radius:9px;
+      border:1px solid var(--line); background: rgba(0,0,0,.25); color:var(--text)
+    }
+    .board{
+      background: linear-gradient(180deg, rgba(15,23,48,.92), rgba(9,14,30,.92));
+      border:1px solid rgba(93,166,255,.22);
+      box-shadow: 0 18px 50px rgba(0,0,0,.45);
+      border-radius: 22px;
+      padding:14px;
+      overflow:hidden;
+    }
+    .question{
+      display:flex; gap:12px; align-items:flex-start; justify-content:space-between; flex-wrap:wrap;
+      margin-bottom:12px;
+    }
+    .question .qtext{font-size:22px; font-weight:900; letter-spacing:.2px; margin:0}
+    .question .meta{display:flex; gap:8px; align-items:center; flex-wrap:wrap; justify-content:flex-end}
+    .strikeBox{display:flex; gap:8px; align-items:center}
+    .strike{
+      width:34px; height:34px; border-radius:12px;
+      border:1px solid rgba(255,255,255,.14);
+      background: rgba(255,255,255,.06);
+      display:grid; place-items:center;
+      font-weight:900; color: rgba(255,255,255,.35);
+    }
+    .strike.on{
+      border-color: rgba(255,92,122,.6);
+      background: rgba(255,92,122,.18);
+      color: rgba(255,92,122,1);
+      box-shadow: 0 0 0 3px rgba(255,92,122,.12) inset;
+    }
+    .answers{display:grid; grid-template-columns: 1fr 1fr; gap:10px}
+    @media (max-width: 720px){ .answers{grid-template-columns:1fr} }
+    .ans{
+      position:relative;
+      border-radius:16px;
+      border:1px solid rgba(255,255,255,.12);
+      background: rgba(255,255,255,.05);
+      overflow:hidden;
+      display:flex; align-items:center; justify-content:space-between;
+      min-height:58px;
+      padding:10px 12px;
+      gap:10px;
+    }
+    .ans .idx{
+      width:34px; height:34px; border-radius:12px;
+      display:grid; place-items:center;
+      background: rgba(93,166,255,.16);
+      border:1px solid rgba(93,166,255,.28);
+      font-weight:900;
+      color: rgba(93,166,255,1);
+      flex: 0 0 auto;
+    }
+    .ans .txt{
+      font-weight:800; letter-spacing:.2px;
+      flex:1;
+      display:flex; flex-direction:column; gap:2px;
+    }
+    .ans .txt small{color:var(--muted); font-weight:650}
+    .ans .pts{
+      min-width:56px; text-align:center; font-weight:950; font-size:18px;
+      background: rgba(71,209,140,.12);
+      border:1px solid rgba(71,209,140,.30);
+      padding:8px 10px; border-radius:14px;
+      flex: 0 0 auto;
+    }
+    .ans .veil{
+      position:absolute; inset:0;
+      background: rgba(6,10,22,0.985);
+      display:flex; align-items:center; justify-content:center;
+      font-weight:950;
+      letter-spacing:.4px;
+      color: rgba(255,255,255,.12);
+      text-transform:uppercase;
+      transition: .18s opacity;
+    }
+    .ans.revealed .veil{opacity:0; pointer-events:none}
+    .ans.revealed{border-color: rgba(71,209,140,.35); background: rgba(71,209,140,.07)}
+    .ans.revealed .pts{background: rgba(71,209,140,.20)}
+    .ans.correctPulse{animation:pulse .6s ease-out}
+    @keyframes pulse{0%{transform:scale(1)}40%{transform:scale(1.02)}100%{transform:scale(1)}}
+    .scoreGrid{display:grid; grid-template-columns:1fr 1fr; gap:10px}
+    .scoreCard{
+      border:1px solid rgba(255,255,255,.12);
+      background: rgba(255,255,255,.05);
+      border-radius:16px;
+      padding:12px;
+      display:flex; flex-direction:column; gap:8px;
+      min-height:104px;
+    }
+    .scoreCard .top{display:flex; align-items:center; justify-content:space-between; gap:10px}
+    .scoreCard .teamName{font-weight:950; letter-spacing:.2px}
+    .scoreCard .big{font-size:30px; font-weight:1000; letter-spacing:.3px}
+    .scoreCard.active{border-color: rgba(255,204,102,.55); box-shadow: 0 0 0 3px rgba(255,204,102,.12) inset}
+    .mini{font-size:12px; color:var(--muted)}
+    .controls{display:flex; gap:10px; flex-wrap:wrap; margin-top:12px}
+    .hint{font-size:12px; color:var(--muted); margin-top:10px; line-height:1.35}
+    textarea, input, select{
+      width:100%;
+      background: rgba(0,0,0,.22);
+      border:1px solid rgba(255,255,255,.14);
+      color: var(--text);
+      border-radius: 14px;
+      padding:10px 12px;
+      outline:none;
+    }
+    textarea{
+      min-height:260px; resize:vertical;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      font-size:12px; line-height:1.35
+    }
+    label{font-size:12px; color:var(--muted); display:block; margin:8px 0 6px}
+    .twoCols{display:grid; grid-template-columns:1fr 1fr; gap:10px}
+    @media (max-width: 720px){ .twoCols{grid-template-columns:1fr} }
+    .toast{
+      position:fixed; left:50%; bottom:18px; transform:translateX(-50%);
+      background: rgba(10,16,34,.88);
+      border:1px solid rgba(255,255,255,.14);
+      padding:10px 12px;
+      border-radius: 14px;
+      box-shadow: var(--shadow);
+      color: var(--text);
+      opacity:0; pointer-events:none;
+      transition:.18s opacity, .18s transform;
+      z-index:50;
+      max-width: calc(100vw - 24px);
+      text-align:center;
+      font-size:13px;
+    }
+    .toast.on{opacity:1; transform:translateX(-50%) translateY(-4px)}
+    .smallBtn{padding:8px 10px; border-radius:12px; font-size:12px}
+    .divider{height:1px; background:var(--line); margin:12px 0}
+    .dangerText{color:var(--danger); font-weight:800}
+    .okText{color:var(--accent); font-weight:800}
+    .warnText{color:var(--warn); font-weight:800}
+    .helpList{margin:0; padding-left:18px; color:var(--muted); font-size:12px; line-height:1.45}
+    .helpList li{margin:6px 0}
+    .footerNote{margin-top:10px; font-size:12px; color:var(--muted)}
+    .inlineCode{
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      font-size:12px; color: var(--text);
+      background: rgba(255,255,255,.06);
+      border:1px solid rgba(255,255,255,.12);
+      padding:2px 6px; border-radius:8px;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="topbar">
+      <div class="brand">
+        <div class="logo">100</div>
+        <div class="title">
+          <h1>100 NUTRIÓLOGOS DIJERON</h1>
+          <div class="sub">Juego tipo encuesta — configurable, dinámico y listo para proyectar</div>
+        </div>
+      </div>
+      <div class="tabs" role="tablist" aria-label="Vistas">
+        <button class="tab active" id="tab-juego" data-view="juego">Juego</button>
+        <button class="tab" id="tab-config" data-view="config">Configuración</button>
+        <button class="tab" id="tab-ayuda" data-view="ayuda">Ayuda</button>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <section id="view-juego" class="view">
+      <div class="grid">
+        <div class="card">
+          <h2>
+            <span>Tablero</span>
+            <span class="row" style="gap:8px">
+              <span class="pill" id="roundPill">Ronda 1</span>
+              <span class="pill" id="multPill">Multiplicador: x1</span>
+            </span>
+          </h2>
+          <div class="body">
+            <div class="board">
+              <div class="question">
+                <div>
+                  <div class="muted" id="categoryText" style="font-weight:750; letter-spacing:.25px" style="display:none">Categoría</div>
+                  <p class="qtext" id="questionText">Cargando…</p>
+                </div>
+                <div class="meta">
+                  <div class="strikeBox" title="Strikes">
+                    <div class="strike" id="s1">X</div>
+                    <div class="strike" id="s2">X</div>
+                    <div class="strike" id="s3">X</div>
+                    <div class="strike" id="s4">X</div>
+                  </div>
+                  <span class="pill" id="activeTeamPill">Turno: Equipo A</span>
+                </div>
+              </div>
+
+              <div class="answers" id="answersGrid"></div>
+
+              <div class="controls">
+                <button class="btn-accent" id="btn-correct">Respuesta correcta (+)</button>
+                <button class="btn-danger" id="btn-strike">Strike (X)</button>
+                <button class="btn-warn" id="btn-steal">Robo</button>
+                <button id="btn-switch">Cambiar turno</button>
+                <button id="btn-reveal-all">Revelar todas</button>
+                <button id="btn-next-round-locked" class="btn-accent" disabled>Siguiente ronda</button>
+                <button class="btn-ghost" id="btn-reset-round">Reiniciar ronda</button>
+              </div>
+
+              <div class="hint">
+                <span class="kbd">Teclas</span>:
+                <span class="inlineCode">1…9</span> revelar respuesta,
+                <span class="inlineCode">X</span> strike,
+                <span class="inlineCode">T</span> cambiar turno,
+                <span class="inlineCode">R</span> revelar todas,
+                <span class="inlineCode">B</span> bancar al equipo en turno.
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h2>
+            <span>Marcador</span>
+            <span class="row" style="gap:8px">
+              <button class="smallBtn" id="btn-prev-round" title="Ronda anterior">◀</button>
+              <button class="smallBtn" id="btn-next-round" title="Siguiente ronda">▶</button>
+            </span>
+          </h2>
+          <div class="body">
+            <div class="scoreGrid">
+              <div class="scoreCard" id="teamAcard">
+                <div class="top">
+                  <div>
+                    <div class="teamName" id="teamAname">Equipo A</div>
+                    <div class="mini">Total del juego</div>
+                  </div>
+                  <div class="pill" id="teamAtag">A</div>
+                </div>
+                <div class="big" id="teamAtotal">0</div>
+                <div class="mini">Ronda actual: <span id="teamAround">0</span></div>
+              </div>
+
+              <div class="scoreCard" id="teamBcard">
+                <div class="top">
+                  <div>
+                    <div class="teamName" id="teamBname">Equipo B</div>
+                    <div class="mini">Total del juego</div>
+                  </div>
+                  <div class="pill" id="teamBtag">B</div>
+                </div>
+                <div class="big" id="teamBtotal">0</div>
+                <div class="mini">Ronda actual: <span id="teamBround">0</span></div>
+              </div>
+            </div>
+
+            <div class="divider"></div>
+
+            <div class="row" style="margin-bottom:8px">
+              <span class="pill">Banco de ronda</span>
+              <span class="spacer"></span>
+              <span class="pill"><b id="roundBank">0</b> pts</span>
+            </div>
+
+            <div id="plot" style="height:260px;"></div>
+
+            <div class="divider"></div>
+
+            <div class="row" style="gap:8px">
+              <button class="btn-accent" id="btn-bank-to-active">Bancar a turno</button>
+              <button class="btn-warn" id="btn-bank-to-other">Bancar al otro</button>
+              <button id="btn-clear-game" class="btn-danger">Reiniciar juego</button>
+            </div>
+
+            <div class="footerNote">
+              <span class="warnText">Tip:</span> el banco de ronda se suma con <b>Bancar</b>.
+              El botón <b>Robo</b> cambia el turno y permite decidir a quién bancar.
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="view-config" class="view" style="display:none">
+      <div class="grid">
+        <div class="card">
+          <h2>
+            <span>Editor rápido</span>
+            <span class="pill">Se guarda en tu navegador (local)</span>
+          </h2>
+          <div class="body">
+            <div class="twoCols">
+              <div>
+                <label>Nombre del juego</label>
+                <input id="cfgGameName" placeholder="100 NUTRIÓLOGOS DIJERON" />
+              </div>
+              <div>
+                <label>Strikes por ronda</label>
+                <select id="cfgStrikes">
+                  <option value="1">1</option>
+                  <option value="2">2</option>
+                  <option value="3" selected>3</option>
+                  <option value="4">4</option>
+                </select>
+              </div>
+              <div>
+                <label>Equipo A</label>
+                <input id="cfgTeamA" placeholder="Equipo A" />
+              </div>
+              <div>
+                <label>Equipo B</label>
+                <input id="cfgTeamB" placeholder="Equipo B" />
+              </div>
+            </div>
+
+            <div class="divider"></div>
+
+            <label>Rondas (JSON)</label>
+            <textarea id="cfgJson" spellcheck="false"></textarea>
+
+            <div class="row" style="margin-top:10px">
+              <button class="btn-accent" id="btn-apply">Aplicar configuración</button>
+              <button id="btn-export">Exportar JSON</button>
+              <button id="btn-import">Importar JSON</button>
+              <button class="btn-ghost" id="btn-reset-defaults">Restaurar ejemplo</button>
+              <span class="spacer"></span>
+              <button class="btn-danger" id="btn-wipe-storage">Borrar guardado</button>
+            </div>
+
+            <div class="hint">
+              Pega tus rondas en JSON. Máximo 9 respuestas por ronda.
+              Campos por ronda: <span class="inlineCode">categoria</span>, <span class="inlineCode">pregunta</span>, <span class="inlineCode">multiplicador</span>, <span class="inlineCode">respuestas</span> [{texto,puntos}].
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h2>Plantilla e importación</h2>
+          <div class="body">
+            <div class="muted" style="font-weight:800; margin-bottom:8px">Plantilla mínima</div>
+            <pre id="template" style="white-space:pre-wrap; margin:0; color:var(--muted); font-size:12px; background:rgba(0,0,0,.22); border:1px solid rgba(255,255,255,.14); padding:12px; border-radius:14px"></pre>
+
+            <div class="divider"></div>
+
+            <div class="muted" style="font-weight:800; margin-bottom:8px">Chequeos</div>
+            <ul class="helpList" id="checks"></ul>
+
+            <div class="divider"></div>
+
+            <div class="muted" style="font-weight:800; margin-bottom:8px">Importar desde archivo JSON</div>
+            <div class="row" style="gap:8px">
+              <input type="file" id="fileInput" accept="application/json" />
+              <button id="btn-load-file" class="btn-accent">Cargar archivo</button>
+            </div>
+            <div class="hint">El archivo debe contener el objeto completo (nombreJuego, strikesPorRonda, equipos y rondas).</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="view-ayuda" class="view" style="display:none">
+      <div class="card">
+        <h2>Cómo se juega</h2>
+        <div class="body">
+          <ul class="helpList">
+            <li>Selecciona una ronda con ◀ / ▶. Cada ronda tiene pregunta, respuestas y multiplicador.</li>
+            <li>Revela respuestas con clic o teclas <span class="inlineCode">1…9</span>. Al revelarse se suma al <b>banco</b> (puntos × multiplicador).</li>
+            <li>Usa <b>Strike</b> hasta el límite configurado (por defecto 3).</li>
+            <li><b>Cambiar turno</b> alterna el equipo que está respondiendo.</li>
+            <li><b>Robo</b> cambia el turno (para cuando el otro equipo roba la ronda).</li>
+            <li><b>Bancar</b> suma el banco al equipo elegido y reinicia strikes y banco.</li>
+            <li><b>Reiniciar ronda</b> limpia respuestas reveladas, strikes y banco sin afectar el total del juego.</li>
+          </ul>
+
+          <div class="divider"></div>
+
+          <div class="muted" style="font-weight:800; margin-bottom:8px">Atajos de teclado</div>
+          <ul class="helpList">
+            <li><span class="inlineCode">1…9</span>: revelar respuesta #.</li>
+            <li><span class="inlineCode">X</span>: strike.</li>
+            <li><span class="inlineCode">T</span>: cambiar turno.</li>
+            <li><span class="inlineCode">R</span>: revelar todas.</li>
+            <li><span class="inlineCode">←</span> / <span class="inlineCode">→</span>: ronda anterior / siguiente.</li>
+            <li><span class="inlineCode">B</span>: bancar al equipo en turno.</li>
+          </ul>
+
+          <div class="divider"></div>
+
+          <div class="muted" style="font-weight:800; margin-bottom:8px">Notas</div>
+          <ul class="helpList">
+            <li>Todo se guarda localmente en tu navegador.</li>
+            <li>Plotly grafica el marcador en tiempo real.</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <div class="toast" id="toast"></div>
+
+<script>
+const STORAGE_KEY = "nutriologos_dijeron_wordonly_v2";
+const GAME_STATE_KEY = "nutriologos_dijeron_wordonly_state_v2";
+
+
+// Si abres esta versión por primera vez, fuerza el uso del DEFAULT_CONFIG del Word (evita arrastrar configs viejas).
+const BOOT_KEY = "nutriologos_dijeron_wordonly_boot_v2";
+try{
+  if(!localStorage.getItem(BOOT_KEY)){
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(DEFAULT_CONFIG));
+    localStorage.removeItem(GAME_STATE_KEY);
+    localStorage.setItem(BOOT_KEY, "1");
+  }
+}catch(e){}
+const DEFAULT_CONFIG = {
+  "nombreJuego": "100 NUTRIÓLOGOS DIJERON",
+  "strikesPorRonda": 3,
+  "equipos": {
+    "A": "Equipo A",
+    "B": "Equipo B"
+  },
+  "rondas": [
+    {
+      "categoria": "Archivo Word",
+      "pregunta": "Dime una función importante de la célula?",
+      "multiplicador": 1,
+      "respuestas": [
+        {
+          "texto": "Producir energía",
+          "puntos": 35
+        },
+        {
+          "texto": "Reproducirse",
+          "puntos": 25
+        },
+        {
+          "texto": "Transportar sustancias",
+          "puntos": 20
+        },
+        {
+          "texto": "Comunicarse con otras células",
+          "puntos": 15
+        },
+        {
+          "texto": "Mantener la vida del organismo",
+          "puntos": 5
+        }
+      ]
+    },
+    {
+      "categoria": "Archivo Word",
+      "pregunta": "menciona alguna estructura que controla la célula?",
+      "multiplicador": 1,
+      "respuestas": [
+        {
+          "texto": "Núcleo",
+          "puntos": 35
+        },
+        {
+          "texto": "Membrana celular",
+          "puntos": 25
+        },
+        {
+          "texto": "Citoplasma",
+          "puntos": 20
+        },
+        {
+          "texto": "Mitocondria",
+          "puntos": 15
+        },
+        {
+          "texto": "Retículo endoplásmico",
+          "puntos": 5
+        }
+      ]
+    },
+    {
+      "categoria": "Archivo Word",
+      "pregunta": "Un tipo de tejido del cuerpo humano?",
+      "multiplicador": 1,
+      "respuestas": [
+        {
+          "texto": "Epitelial",
+          "puntos": 40
+        },
+        {
+          "texto": "Muscular",
+          "puntos": 25
+        },
+        {
+          "texto": "Nervioso",
+          "puntos": 20
+        },
+        {
+          "texto": "Conectivo",
+          "puntos": 10
+        },
+        {
+          "texto": "Óseo",
+          "puntos": 5
+        }
+      ]
+    },
+    {
+      "categoria": "Archivo Word",
+      "pregunta": "Un tejido que ayude al movimiento?",
+      "multiplicador": 1,
+      "respuestas": [
+        {
+          "texto": "Muscular",
+          "puntos": 40
+        },
+        {
+          "texto": "Nervioso",
+          "puntos": 25
+        },
+        {
+          "texto": "Epitelial",
+          "puntos": 20
+        },
+        {
+          "texto": "Conectivo",
+          "puntos": 10
+        },
+        {
+          "texto": "Adiposo",
+          "puntos": 5
+        }
+      ]
+    },
+    {
+      "categoria": "Archivo Word",
+      "pregunta": "Un tejido relacionado con señales o impulsos?",
+      "multiplicador": 1,
+      "respuestas": [
+        {
+          "texto": "Nervioso",
+          "puntos": 35
+        },
+        {
+          "texto": "Muscular",
+          "puntos": 25
+        },
+        {
+          "texto": "Epitelial",
+          "puntos": 20
+        },
+        {
+          "texto": "Óseo",
+          "puntos": 15
+        },
+        {
+          "texto": "Cartilaginoso",
+          "puntos": 5
+        }
+      ]
+    },
+    {
+      "categoria": "Archivo Word",
+      "pregunta": "Nombra un nivel de organización del cuerpo?",
+      "multiplicador": 1,
+      "respuestas": [
+        {
+          "texto": "Célula",
+          "puntos": 35
+        },
+        {
+          "texto": "Tejido",
+          "puntos": 25
+        },
+        {
+          "texto": "Órgano",
+          "puntos": 20
+        },
+        {
+          "texto": "Sistema",
+          "puntos": 15
+        },
+        {
+          "texto": "Organismo",
+          "puntos": 5
+        }
+      ]
+    },
+    {
+      "categoria": "Archivo Word",
+      "pregunta": "Qué necesita una célula para vivir?",
+      "multiplicador": 1,
+      "respuestas": [
+        {
+          "texto": "Oxígeno",
+          "puntos": 35
+        },
+        {
+          "texto": "Nutrientes",
+          "puntos": 25
+        },
+        {
+          "texto": "Agua",
+          "puntos": 20
+        },
+        {
+          "texto": "Energía",
+          "puntos": 15
+        },
+        {
+          "texto": "Temperatura adecuada",
+          "puntos": 5
+        }
+      ]
+    }
+  ]
+};
+
+let config = loadConfig();
+let state = loadState();
+
+function freshState(){
+  return {
+    rondaIndex: 0,
+    turno: "A",
+    strikes: 0,
+    bancoRonda: 0,
+    reveladas: {},
+    totales: { A: 0, B: 0 },
+    rondaActualAcumulado: { A: 0, B: 0 }
+  };
+}
+
+function ensureStateIntegrity(){
+  if(!state || typeof state !== "object") state = freshState();
+  if(!state.totales) state.totales = {A:0,B:0};
+  if(!state.rondaActualAcumulado) state.rondaActualAcumulado = {A:0,B:0};
+  state.allowNextRound = false;
+  if(!state.reveladas) state.reveladas = {};
+  if(typeof state.rondaIndex !== "number" || state.rondaIndex < 0) state.rondaIndex = 0;
+  if(state.rondaIndex >= config.rondas.length) state.rondaIndex = Math.max(0, config.rondas.length - 1);
+  if(state.turno !== "A" && state.turno !== "B") state.turno = "A";
+  if(typeof state.strikes !== "number" || state.strikes < 0) state.strikes = 0;
+  state.allowNextRound = false;
+  if(typeof state.bancoRonda !== "number" || state.bancoRonda < 0) state.bancoRonda = 0;
+  if(typeof state.allowNextRound !== "boolean") state.allowNextRound = false;
+  const key = String(state.rondaIndex);
+  const n = (config.rondas[state.rondaIndex]?.respuestas || []).length;
+  if(!Array.isArray(state.reveladas[key]) || state.reveladas[key].length !== n){
+    state.reveladas[key] = Array.from({length:n}, () => false);
+  }
+}
+
+function getRevealedArray(idx){
+  const key = String(idx);
+  const n = (config.rondas[idx]?.respuestas || []).length;
+  if(!Array.isArray(state.reveladas[key]) || state.reveladas[key].length !== n){
+    state.reveladas[key] = Array.from({length:n}, () => false);
+  }
+  return state.reveladas[key];
+}
+
+function loadConfig(){
+  try{
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if(!raw) return structuredClone(DEFAULT_CONFIG);
+    const parsed = JSON.parse(raw);
+    return validateAndNormalizeConfig(parsed, true);
+  }catch(e){
+    return structuredClone(DEFAULT_CONFIG);
+  }
+}
+function saveConfig(){ localStorage.setItem(STORAGE_KEY, JSON.stringify(config)); }
+
+function loadState(){
+  try{
+    const raw = localStorage.getItem(GAME_STATE_KEY);
+    if(!raw) return freshState();
+    return JSON.parse(raw);
+  }catch(e){
+    return freshState();
+  }
+}
+function saveState(){ localStorage.setItem(GAME_STATE_KEY, JSON.stringify(state)); }
+
+const $ = (sel) => document.querySelector(sel);
+const $$ = (sel) => Array.from(document.querySelectorAll(sel));
+
+const toastEl = $("#toast");
+let toastTimer = null;
+function toast(msg){
+  toastEl.textContent = msg;
+  toastEl.classList.add("on");
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(()=> toastEl.classList.remove("on"), 1700);
+}
+
+function setActiveTab(view){
+  $$(".tab").forEach(b=> b.classList.toggle("active", b.dataset.view === view));
+  $$(".view").forEach(v=> v.style.display = (v.id === "view-"+view) ? "" : "none");
+}
+
+function renderBoard(){
+  ensureStateIntegrity();
+  const ronda = config.rondas[state.rondaIndex];
+  $("#roundPill").textContent = `Ronda ${state.rondaIndex + 1} de ${config.rondas.length}`;
+  $("#multPill").textContent = `Multiplicador: x${ronda.multiplicador ?? 1}`;
+  $("#questionText").textContent = ronda.pregunta || "Pregunta";
+  $("#activeTeamPill").textContent = `Turno: ${config.equipos[state.turno] || ("Equipo " + state.turno)}`;
+
+  const maxS = Number(config.strikesPorRonda || 3);
+  const strikesNow = Math.min(state.strikes, maxS);
+  for(let i=1;i<=4;i++){
+    const el = $("#s"+i);
+    if(!el) continue;
+    el.style.display = i<=maxS ? "" : "none";
+    el.classList.toggle("on", i<=strikesNow);
+  }
+
+  const grid = $("#answersGrid");
+  grid.innerHTML = "";
+  const revealed = getRevealedArray(state.rondaIndex);
+
+  // Habilita 'Siguiente ronda' solo si hubo robo o si ya se revelaron todas las respuestas
+  const allRevealed = revealed.length > 0 && revealed.every(Boolean);
+  const canGoNext = !!state.allowNextRound || allRevealed;
+  const nextBtn = document.getElementById('btn-next-round-locked');
+  if(nextBtn){
+    nextBtn.disabled = !canGoNext;
+    nextBtn.title = canGoNext ? 'Ir a la siguiente ronda' : 'Se habilita con ROBO o al revelar todas las respuestas';
+  }
+
+  (ronda.respuestas || []).forEach((a, i) => {
+    const card = document.createElement("div");
+    card.className = "ans" + (revealed[i] ? " revealed" : "");
+    card.dataset.index = String(i);
+
+    const idx = document.createElement("div");
+    idx.className = "idx";
+    idx.textContent = (i+1);
+
+    const txt = document.createElement("div");
+    txt.className = "txt";
+    const main = document.createElement("div");
+    main.textContent = a.texto || `Respuesta ${i+1}`;
+    const sub = document.createElement("small");
+    sub.textContent = `Puntos base: ${Number(a.puntos||0)}`;
+    txt.appendChild(main);
+    txt.appendChild(sub);
+
+    const pts = document.createElement("div");
+    pts.className = "pts";
+    const value = Number(a.puntos||0) * Number(ronda.multiplicador||1);
+    pts.textContent = value;
+
+    const veil = document.createElement("div");
+    veil.className = "veil";
+    veil.textContent = "Oculto";
+
+    card.appendChild(idx);
+    card.appendChild(txt);
+    card.appendChild(pts);
+    card.appendChild(veil);
+
+    card.addEventListener("click", () => toggleReveal(i));
+    grid.appendChild(card);
+  });
+}
+
+function renderScores(){
+  $("#teamAname").textContent = config.equipos.A || "Equipo A";
+  $("#teamBname").textContent = config.equipos.B || "Equipo B";
+  $("#teamAtotal").textContent = Number(state.totales.A||0);
+  $("#teamBtotal").textContent = Number(state.totales.B||0);
+  $("#teamAround").textContent = Number(state.rondaActualAcumulado.A||0);
+  $("#teamBround").textContent = Number(state.rondaActualAcumulado.B||0);
+  $("#roundBank").textContent = Number(state.bancoRonda||0);
+
+  $("#teamAcard").classList.toggle("active", state.turno === "A");
+  $("#teamBcard").classList.toggle("active", state.turno === "B");
+
+  const x = [config.equipos.A || "Equipo A", config.equipos.B || "Equipo B"];
+  const y = [Number(state.totales.A||0), Number(state.totales.B||0)];
+  const data = [{
+    type:"bar",
+    x, y,
+    hovertemplate: "%{x}<br><b>%{y}</b> pts<extra></extra>"
+  }];
+  const layout = {
+    paper_bgcolor: "rgba(0,0,0,0)",
+    plot_bgcolor: "rgba(0,0,0,0)",
+    margin: {l:30,r:10,t:10,b:30},
+    xaxis: {tickfont:{color:"rgba(233,236,255,.9)"}, gridcolor:"rgba(255,255,255,.08)"},
+    yaxis: {tickfont:{color:"rgba(233,236,255,.9)"}, gridcolor:"rgba(255,255,255,.08)", zerolinecolor:"rgba(255,255,255,.12)"},
+    font: {color:"rgba(233,236,255,.92)"},
+    showlegend:false
+  };
+  Plotly.react("plot", data, layout, {displayModeBar:false, responsive:true});
+}
+
+function renderConfig(){
+  $("#cfgGameName").value = config.nombreJuego || "100 NUTRIÓLOGOS DIJERON";
+  $("#cfgStrikes").value = String(config.strikesPorRonda ?? 3);
+  $("#cfgTeamA").value = config.equipos?.A ?? "Equipo A";
+  $("#cfgTeamB").value = config.equipos?.B ?? "Equipo B";
+  $("#cfgJson").value = JSON.stringify(config.rondas || [], null, 2);
+
+  const templateObj = {
+    nombreJuego: "100 NUTRIÓLOGOS DIJERON",
+    strikesPorRonda: 3,
+    equipos: { A: "Equipo A", B: "Equipo B" },
+    rondas: [
+      {
+        categoria: "Ej. Categoría",
+        pregunta: "Ej. Pregunta",
+        multiplicador: 1,
+        respuestas: [
+          { texto: "Respuesta 1", puntos: 30 },
+          { texto: "Respuesta 2", puntos: 18 }
+        ]
+      }
+    ]
+  };
+  $("#template").textContent = JSON.stringify(templateObj, null, 2);
+
+  const checks = [];
+  validateAndNormalizeConfig(config, false, checks);
+  const ul = $("#checks");
+  ul.innerHTML = "";
+  if(!checks.length){
+    const li = document.createElement("li");
+    li.innerHTML = `<span class="okText">OK</span> Configuración válida.`;
+    ul.appendChild(li);
+  }else{
+    checks.forEach(c=>{
+      const li = document.createElement("li");
+      li.innerHTML = c;
+      ul.appendChild(li);
+    });
+  }
+}
+
+function renderAll(){
+  document.title = config.nombreJuego || "100 NUTRIÓLOGOS DIJERON";
+  document.querySelector(".title h1").textContent = config.nombreJuego || "100 NUTRIÓLOGOS DIJERON";
+  renderBoard();
+  renderScores();
+  renderConfig();
+  saveState();
+}
+
+function toggleReveal(i){
+  const ronda = config.rondas[state.rondaIndex];
+  const revealed = getRevealedArray(state.rondaIndex);
+
+  // Habilita 'Siguiente ronda' solo si hubo robo o si ya se revelaron todas las respuestas
+  const allRevealed = revealed.length > 0 && revealed.every(Boolean);
+  const canGoNext = !!state.allowNextRound || allRevealed;
+  const nextBtn = document.getElementById('btn-next-round-locked');
+  if(nextBtn){
+    nextBtn.disabled = !canGoNext;
+    nextBtn.title = canGoNext ? 'Ir a la siguiente ronda' : 'Se habilita con ROBO o al revelar todas las respuestas';
+  }
+  const was = !!revealed[i];
+  revealed[i] = !was;
+
+  const pts = Number(ronda.respuestas?.[i]?.puntos || 0) * Number(ronda.multiplicador || 1);
+  if(!was){
+    state.bancoRonda += pts;
+    setTimeout(()=>{
+      const el = document.querySelector(`.ans[data-index="${i}"]`);
+      if(el){ el.classList.add("correctPulse"); setTimeout(()=> el.classList.remove("correctPulse"), 650); }
+    }, 0);
+    toast(`+${pts} al banco`);
+  }else{
+    state.bancoRonda = Math.max(0, state.bancoRonda - pts);
+    toast(`-${pts} del banco`);
+  }
+  saveState();
+  renderBoard();
+  renderScores();
+}
+
+function addStrike(){
+  const maxS = Number(config.strikesPorRonda || 3);
+  if(state.strikes >= maxS) return toast("Ya alcanzaste el límite de strikes.");
+  state.strikes += 1;
+  saveState();
+  renderBoard();
+  toast("Strike");
+}
+
+function switchTurn(){
+  state.turno = (state.turno === "A") ? "B" : "A";
+  saveState();
+  renderBoard();
+  renderScores();
+  toast(`Turno: ${config.equipos[state.turno]}`);
+}
+
+function steal(){
+  switchTurn();
+  state.allowNextRound = true;
+  saveState();
+  renderBoard();
+  toast("¡Robo! Ya puedes ir a la siguiente ronda.");
+}
+
+function revealAll(){
+  const revealed = getRevealedArray(state.rondaIndex);
+
+  // Habilita 'Siguiente ronda' solo si hubo robo o si ya se revelaron todas las respuestas
+  const allRevealed = revealed.length > 0 && revealed.every(Boolean);
+  const canGoNext = !!state.allowNextRound || allRevealed;
+  const nextBtn = document.getElementById('btn-next-round-locked');
+  if(nextBtn){
+    nextBtn.disabled = !canGoNext;
+    nextBtn.title = canGoNext ? 'Ir a la siguiente ronda' : 'Se habilita con ROBO o al revelar todas las respuestas';
+  }
+  const ronda = config.rondas[state.rondaIndex];
+  let added = 0;
+  for(let i=0;i<revealed.length;i++){
+    if(!revealed[i]){
+      revealed[i] = true;
+      added += Number(ronda.respuestas?.[i]?.puntos||0) * Number(ronda.multiplicador||1);
+    }
+  }
+  if(added>0){ state.bancoRonda += added; toast(`Reveladas: +${added} al banco`); }
+  else toast("Ya estaban reveladas.");
+  saveState();
+  renderBoard();
+  renderScores();
+}
+
+function resetRound(){
+  const key = String(state.rondaIndex);
+  const n = (config.rondas[state.rondaIndex]?.respuestas || []).length;
+  state.reveladas[key] = Array.from({length:n}, ()=>false);
+  state.strikes = 0;
+  state.allowNextRound = false;
+  state.bancoRonda = 0;
+  state.rondaActualAcumulado = {A:0,B:0};
+  state.allowNextRound = false;
+  saveState();
+  renderAll();
+  toast("Ronda reiniciada.");
+}
+
+function bankTo(team){
+  const pts = Number(state.bancoRonda||0);
+  if(pts <= 0) return toast("No hay puntos en el banco.");
+  state.totales[team] = Number(state.totales[team]||0) + pts;
+  state.rondaActualAcumulado[team] = Number(state.rondaActualAcumulado[team]||0) + pts;
+  state.bancoRonda = 0;
+  state.strikes = 0;
+  state.allowNextRound = false;
+  saveState();
+  renderAll();
+  toast(`Bancado a ${config.equipos[team]} (+${pts})`);
+}
+
+function goRound(delta){
+  if(!config.rondas.length) return toast("No hay rondas configuradas.");
+  state.rondaIndex = Math.max(0, Math.min(config.rondas.length-1, state.rondaIndex + delta));
+  ensureStateIntegrity();
+  saveState();
+  renderAll();
+  toast(`Ronda ${state.rondaIndex+1}`);
+}
+
+function validateAndNormalizeConfig(input, fix=true, outChecks=null){
+  const checks = outChecks || [];
+  const cfg = (input && typeof input === "object") ? structuredClone(input) : structuredClone(DEFAULT_CONFIG);
+
+  if(typeof cfg.nombreJuego !== "string" || !cfg.nombreJuego.trim()){
+    checks.push(`<span class="warnText">Aviso</span> Falta <b>nombreJuego</b>.`);
+    if(fix) cfg.nombreJuego = "100 NUTRIÓLOGOS DIJERON";
+  }
+  const sp = Number(cfg.strikesPorRonda);
+  if(!Number.isFinite(sp) || sp < 1 || sp > 4){
+    checks.push(`<span class="warnText">Aviso</span> <b>strikesPorRonda</b> inválido (1 a 4).`);
+    if(fix) cfg.strikesPorRonda = 3;
+  }
+
+  if(!cfg.equipos || typeof cfg.equipos !== "object"){
+    checks.push(`<span class="warnText">Aviso</span> Falta <b>equipos</b>.`);
+    if(fix) cfg.equipos = {A:"Equipo A", B:"Equipo B"};
+  }else{
+    if(typeof cfg.equipos.A !== "string" || !cfg.equipos.A.trim()){ checks.push(`<span class="warnText">Aviso</span> Falta equipos.A.`); if(fix) cfg.equipos.A = "Equipo A"; }
+    if(typeof cfg.equipos.B !== "string" || !cfg.equipos.B.trim()){ checks.push(`<span class="warnText">Aviso</span> Falta equipos.B.`); if(fix) cfg.equipos.B = "Equipo B"; }
+  }
+
+  if(!Array.isArray(cfg.rondas) || cfg.rondas.length === 0){
+    checks.push(`<span class="dangerText">Error</span> No hay <b>rondas</b> definidas.`);
+    if(fix) cfg.rondas = structuredClone(DEFAULT_CONFIG.rondas);
+  }
+
+  cfg.rondas = (cfg.rondas||[]).map((r, idx) => {
+    const rr = (r && typeof r === "object") ? r : {};
+    if(typeof rr.categoria !== "string") rr.categoria = `Ronda ${idx+1}`;
+    if(typeof rr.pregunta !== "string") rr.pregunta = `Pregunta de la ronda ${idx+1}`;
+    const mult = Number(rr.multiplicador);
+    if(!Number.isFinite(mult) || mult < 1 || mult > 10) rr.multiplicador = 1;
+
+    if(!Array.isArray(rr.respuestas) || rr.respuestas.length === 0){
+      rr.respuestas = [{texto:"Respuesta 1", puntos: 10}];
+      checks.push(`<span class="warnText">Aviso</span> Ronda ${idx+1} sin respuestas. Se agregó una por defecto.`);
+    }
+
+    rr.respuestas = rr.respuestas.slice(0, 9).map((a,i)=>{
+      const aa = (a && typeof a === "object") ? a : {};
+      if(typeof aa.texto !== "string") aa.texto = `Respuesta ${i+1}`;
+      const p = Number(aa.puntos);
+      if(!Number.isFinite(p) || p < 0) aa.puntos = 0;
+      return aa;
+    });
+    return rr;
+  });
+
+  return cfg;
+}
+
+// Tabs
+$("#tab-juego").addEventListener("click", ()=> setActiveTab("juego"));
+$("#tab-config").addEventListener("click", ()=> { setActiveTab("config"); renderConfig(); });
+$("#tab-ayuda").addEventListener("click", ()=> setActiveTab("ayuda"));
+
+// Juego
+$("#btn-strike").addEventListener("click", addStrike);
+$("#btn-switch").addEventListener("click", switchTurn);
+$("#btn-steal").addEventListener("click", steal);
+$("#btn-reveal-all").addEventListener("click", revealAll);
+$("#btn-reset-round").addEventListener("click", resetRound);
+
+
+const btnNextLocked = document.getElementById("btn-next-round-locked");
+if(btnNextLocked){ btnNextLocked.addEventListener("click", nextRoundLocked); }
+$("#btn-bank-to-active").addEventListener("click", ()=> bankTo(state.turno));
+$("#btn-bank-to-other").addEventListener("click", ()=> bankTo(state.turno === "A" ? "B" : "A"));
+$("#btn-clear-game").addEventListener("click", ()=>{
+  localStorage.removeItem(GAME_STATE_KEY);
+  state = freshState();
+  ensureStateIntegrity();
+  renderAll();
+  toast("Juego reiniciado.");
+});
+
+// Rondas
+$("#btn-prev-round").addEventListener("click", ()=> goRound(-1));
+$("#btn-next-round").addEventListener("click", ()=> goRound(+1));
+
+// Config
+$("#btn-apply").addEventListener("click", ()=>{
+  const nombreJuego = $("#cfgGameName").value.trim() || "100 NUTRIÓLOGOS DIJERON";
+  const strikesPorRonda = Number($("#cfgStrikes").value || 3);
+  const equipos = { A: ($("#cfgTeamA").value.trim() || "Equipo A"), B: ($("#cfgTeamB").value.trim() || "Equipo B") };
+
+  let rondas = null;
+  try{
+    rondas = JSON.parse($("#cfgJson").value);
+    if(!Array.isArray(rondas)) throw new Error("Rondas debe ser lista");
+  }catch(e){
+    return toast("JSON inválido en rondas.");
+  }
+
+  config = validateAndNormalizeConfig({nombreJuego, strikesPorRonda, equipos, rondas}, true);
+  saveConfig();
+
+  state.rondaIndex = Math.min(state.rondaIndex, config.rondas.length-1);
+  ensureStateIntegrity();
+  saveState();
+  renderAll();
+  toast("Configuración aplicada.");
+});
+
+$("#btn-export").addEventListener("click", ()=>{
+  const payload = JSON.stringify(config, null, 2);
+  const blob = new Blob([payload], {type:"application/json"});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "100_nutriologos_dijeron_config.json";
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+  toast("JSON exportado.");
+});
+
+$("#btn-import").addEventListener("click", ()=>{
+  const txt = prompt("Pega aquí el JSON completo de configuración:");
+  if(!txt) return;
+  try{
+    const parsed = JSON.parse(txt);
+    config = validateAndNormalizeConfig(parsed, true);
+    saveConfig();
+    ensureStateIntegrity();
+    saveState();
+    renderAll();
+    toast("JSON importado.");
+  }catch(e){
+    toast("No se pudo importar: JSON inválido.");
+  }
+});
+
+$("#btn-reset-defaults").addEventListener("click", ()=>{
+  config = structuredClone(DEFAULT_CONFIG);
+  saveConfig();
+  ensureStateIntegrity();
+  saveState();
+  renderAll();
+  toast("Ejemplo restaurado.");
+});
+
+$("#btn-wipe-storage").addEventListener("click", ()=>{
+  if(confirm("¿Borrar configuración guardada y restaurar el ejemplo?")){
+    localStorage.removeItem(STORAGE_KEY);
+    config = structuredClone(DEFAULT_CONFIG);
+    saveConfig();
+    ensureStateIntegrity();
+    saveState();
+    renderAll();
+    toast("Listo.");
+  }
+});
+
+$("#btn-load-file").addEventListener("click", ()=>{
+  const fi = $("#fileInput");
+  if(!fi.files || !fi.files.length) return toast("Selecciona un archivo JSON.");
+  const file = fi.files[0];
+  const reader = new FileReader();
+  reader.onload = () => {
+    try{
+      const parsed = JSON.parse(reader.result);
+      config = validateAndNormalizeConfig(parsed, true);
+      saveConfig();
+      ensureStateIntegrity();
+      saveState();
+      renderAll();
+      toast("Archivo cargado.");
+      setActiveTab("juego");
+    }catch(e){
+      toast("Archivo inválido.");
+    }
+  };
+  reader.readAsText(file);
+});
+
+// Botón "Respuesta correcta" (acceso rápido)
+$("#btn-correct").addEventListener("click", ()=>{
+  const n = prompt("¿Qué respuesta quieres revelar? (1 a 9)");
+  if(!n) return;
+  const i = Number(n) - 1;
+  if(!Number.isInteger(i) || i < 0) return toast("Número inválido.");
+  const ronda = config.rondas[state.rondaIndex];
+  if(i >= (ronda.respuestas||[]).length) return toast("Esa respuesta no existe en esta ronda.");
+  const revealed = getRevealedArray(state.rondaIndex);
+
+  // Habilita 'Siguiente ronda' solo si hubo robo o si ya se revelaron todas las respuestas
+  const allRevealed = revealed.length > 0 && revealed.every(Boolean);
+  const canGoNext = !!state.allowNextRound || allRevealed;
+  const nextBtn = document.getElementById('btn-next-round-locked');
+  if(nextBtn){
+    nextBtn.disabled = !canGoNext;
+    nextBtn.title = canGoNext ? 'Ir a la siguiente ronda' : 'Se habilita con ROBO o al revelar todas las respuestas';
+  }
+  if(!revealed[i]) toggleReveal(i);
+  else toast("Esa respuesta ya estaba revelada.");
+});
+
+// Teclado
+document.addEventListener("keydown", (e)=>{
+  const key = e.key;
+  const tag = (e.target && e.target.tagName) ? e.target.tagName.toLowerCase() : "";
+  if(tag === "input" || tag === "textarea" || tag === "select") return;
+
+  if(key >= "1" && key <= "9"){
+    const i = Number(key) - 1;
+    const ronda = config.rondas[state.rondaIndex];
+    if(i < (ronda.respuestas||[]).length) toggleReveal(i);
+    else toast("No existe esa respuesta.");
+  }else if(key === "x" || key === "X"){
+    addStrike();
+  }else if(key === "t" || key === "T"){
+    switchTurn();
+  }else if(key === "r" || key === "R"){
+    revealAll();
+  }else if(key === "ArrowLeft"){
+    goRound(-1);
+  }else if(key === "ArrowRight"){
+    goRound(+1);
+  }else if(key === "b" || key === "B"){
+    bankTo(state.turno);
+  }
+});
+
+
+function nextRoundLocked(){
+  const revealed = getRevealedArray(state.rondaIndex);
+  const allRevealed = revealed.length > 0 && revealed.every(Boolean);
+  const canGoNext = !!state.allowNextRound || allRevealed;
+  if(!canGoNext) return toast("Aún no: se habilita con ROBO o al revelar todas.");
+  // Avanza
+  if(state.rondaIndex >= config.rondas.length - 1){
+    toast("Ya estás en la última ronda.");
+    return;
+  }
+  state.rondaIndex = Math.max(0, Math.min(config.rondas.length-1, state.rondaIndex + 1));
+  // Reinicia estado de ronda nueva
+  const key = String(state.rondaIndex);
+  const n = (config.rondas[state.rondaIndex]?.respuestas || []).length;
+  state.reveladas[key] = Array.from({length:n}, ()=>false);
+  state.strikes = 0;
+  state.bancoRonda = 0;
+  state.rondaActualAcumulado = {A:0,B:0};
+  state.allowNextRound = false;
+  saveState();
+  renderAll();
+  toast(`Ronda ${state.rondaIndex+1}`);
+}
+
+// init
+ensureStateIntegrity();
+renderAll();
+</script>
+</body>
+</html>
